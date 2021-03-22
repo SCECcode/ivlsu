@@ -1,0 +1,58 @@
+This file contains information about the 3-D Vp Imperial Valley model.
+
+Citation:
+Patricia Persaud, Yiran Ma, Joann M. Stock, John A. Hole, Gary S. Fuis, Liang Han; Fault zone characteristics and basin complexity in the southern Salton Trough, California. Geology 2016;; 44 (9): 747–750. doi: https://doi.org/10.1130/G38033.1
+
+IV33.dat is the 3D Vp travel time tomography model from Persaud et al. (2016).
+The model volume is bounded by the coverage polygon in the paper.
+The columns of the file are: x (km) y (km) z (km) vp (km/s), where 
+x, y, and z are utm coordinates in km and the columns increase in x.y.z order. 
+Grid spacing is 1 km in each spatial dimension. 
+
+1. Number of grid points in x, y, and z. 
+
+nx = 66
+ny = 86
+nz = 9
+
+nx = 1 is left, nx = 66 is right.
+ny = 1 is bottom, ny = 86 is top.
+nz = 1 is top, nz = 9 is bottom.
+
+2. Depth, in meters.
+
+Minimum depth = 0 km
+Maximum depth = 8 km
+depth_interval = 1 km
+
+NOTE: 0 km is ~ sea level and 8 km depth is 8 km below sea level. 
+
+3. Corners in UTM projection.
+
+bottom_left_corner_e = 589 km
+bottom_left_corner_n = 3607 km
+bottom_right_corner_e = 654 km
+bottom_right_corner_n = 3607 km
+top_left_corner_e = 589 km
+top_left_corner_n = 3692 km 
+top_right_corner_e = 654 km
+top_right_corner_n = 3692 km
+
+4. Corners in geographic coordinates.
+
+utm zone = 11 S
+bottom_left_corner_lon = -116.051578
+bottom_left_corner_lat = 32.596922
+bottom_right_corner_lon = -115.344866
+bottom_right_corner_lat = 32.596922
+top_left_corner_lon = -116.051578
+top_left_corner_lat = 33.356203
+top_right_corner_lon = -115.344866
+top_right_corner_lat = 33.356203
+
+5. Additional notes:
+
+(i) Use ray coverage maps from Persaud et al.(2016) to assess reliable areas of the model.
+Areas with poor ray coverage are closer to the background 1D model of Kanamori and Hadley (1975).
+
+
