@@ -162,8 +162,10 @@ void print_error(char *err);
 void imperial_read_properties(int x, int y, int z, imperial_properties_t *data);
 /** Attempts to malloc the model size in memory and read it in. */
 int imperial_try_reading_model(imperial_model_t *model);
-/** Calculates density from Vs. */
-double imperial_calculate_density(double vs);
+/** Calculates density from Vp. */
+double imperial_calculate_density(double vp);
+/** Calculates Vs from Vp. */
+double imperial_calculate_vs(double vp);
 
 // Interpolation Functions
 /** Linearly interpolates two imperial_properties_t structures */

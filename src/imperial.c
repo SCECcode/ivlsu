@@ -63,11 +63,11 @@ int imperial_init(const char *dir, const char *label) {
 
         // We need to convert the point from lat, lon to UTM, let's set it up.
         if (!(imperial_latlon = pj_init_plus("+proj=latlong +datum=WGS84"))) {
-                imperial_print_error("Could not set up latitude and longitude projection.");
+                print_error("Could not set up latitude and longitude projection.");
                 return FAIL;
         }
         if (!(imperial_utm = pj_init_plus("+proj=utm +zone=11 +ellps=clrk66 +datum=NAD27 +units=m +no_defs"))) {
-                imperial_print_error("Could not set up UTM projection.");
+                print_error("Could not set up UTM projection.");
                 return FAIL;
         }
 
@@ -96,8 +96,8 @@ int imperial_query(imperial_point_t *points, imperial_properties_t *data, int nu
 	int longlat2utm = 0;
         double point_utm_e = 0, point_utm_n = 0;
 
-        double delta_easting = (imperial_configuration->top_right_corner_e - imperial_configuration->bottom_left_corner_e)/(imperial_configuration->nx - 1);
-        double delta_northing = (imperial_configuration->top_right_corner_n - imperial_configuration->bottom_left_corner_n)/(imperial_configuration->ny - 1);
+        double delta_lon = (imperial_configuration->top_right_corner_e - imperial_configuration->bottom_left_corner_e)/(imperial_configuration->nx - 1);
+        double delta_lat = (imperial_configuration->top_right_corner_n - imperial_configuration->bottom_left_corner_n)/(imperial_configuration->ny - 1);
 
 	for (i = 0; i < numpoints; i++) {
 		lon_e = points[i].longitude; 
@@ -118,8 +118,6 @@ int imperial_query(imperial_point_t *points, imperial_properties_t *data, int nu
 			data[i].vp = -1;
 			data[i].vs = -1;
 			data[i].rho = -1;
-			data[i].qp = -1;
-			data[i].qs = -1;
 			continue;
 		}
 
@@ -166,9 +164,6 @@ delta_lat;
 
 		data[i].rho = imperial_calculate_density(data[i].vp);
 		data[i].vs = imperial_calculate_vs(data[i].vp);
-
-		data[i].qp = -1;
-		data[i].qs = -1;
 	}
 
 	return SUCCESS;
@@ -189,25 +184,11 @@ void imperial_read_properties(int x, int y, int z, imperial_properties_t *data) 
 	data->vp = -1;
 	data->vs = -1;
 	data->rho = -1;
-	data->qp = -1;
-	data->qs = -1;
 
 	float *ptr = NULL;
 	FILE *fp = NULL;
 
 	int location = z * (imperial_configuration->nx * imperial_configuration->ny) + (y * imperial_configuration->nx) + x;
-
-	// Check our loaded components of the model.
-	if (imperial_velocity_model->vs_status == 2) {
-		// Read from memory.
-		ptr = (float *)imperial_velocity_model->vs;
-		data->vs = ptr[location];
-	} else if (imperial_velocity_model->vs_status == 1) {
-		// Read from file.
-		fp = (FILE *)imperial_velocity_model->vs;
-		fseek(fp, location * sizeof(float), SEEK_SET);
-		fread(&(data->vs), sizeof(float), 1, fp);
-	}
 
 	// Check our loaded components of the model.
 	if (imperial_velocity_model->vp_status == 2) {
@@ -218,17 +199,6 @@ void imperial_read_properties(int x, int y, int z, imperial_properties_t *data) 
 		// Read from file.
 		fseek(fp, location * sizeof(float), SEEK_SET);
 		fread(&(data->vp), sizeof(float), 1, fp);
-	}
-
-	// Check our loaded components of the model.
-	if (imperial_velocity_model->rho_status == 2) {
-		// Read from memory.
-		ptr = (float *)imperial_velocity_model->rho;
-		data->rho = ptr[location];
-	} else if (imperial_velocity_model->rho_status == 1) {
-		// Read from file.
-		fseek(fp, location * sizeof(float), SEEK_SET);
-		fread(&(data->rho), sizeof(float), 1, fp);
 	}
 }
 
@@ -305,9 +275,7 @@ int imperial_finalize() {
         pj_free(imperial_latlon);
         pj_free(imperial_utm);
 
-	if (imperial_velocity_model->vs) free(imperial_velocity_model->vs);
 	if (imperial_velocity_model->vp) free(imperial_velocity_model->vp);
-	if (imperial_velocity_model->rho) free(imperial_velocity_model->rho);
 
 	free(imperial_configuration);
 
@@ -390,18 +358,6 @@ int imperial_read_configuration(char *file, imperial_configuration_t *config) {
 				config->bottom_right_corner_n = atof(value);
 			if (strcmp(key, "depth_interval") == 0)
 				config->depth_interval = atof(value);
-			if (strcmp(key, "p0") == 0)
-				config->p0 = atof(value);
-			if (strcmp(key, "p1") == 0)
-				config->p1 = atof(value);
-			if (strcmp(key, "p2") == 0)
-				config->p2 = atof(value);
-			if (strcmp(key, "p3") == 0)
-				config->p3 = atof(value);
-			if (strcmp(key, "p4") == 0)
-				config->p4 = atof(value);
-			if (strcmp(key, "p5") == 0)
-				config->p5 = atof(value);
 			if (strcmp(key, "interpolation") == 0) {
                                 if (strcmp(value, "on") == 0) {
                                      config->interpolation = 1;
@@ -418,8 +374,7 @@ int imperial_read_configuration(char *file, imperial_configuration_t *config) {
 		config->top_left_corner_e == 0 || config->top_left_corner_n == 0 || config->top_right_corner_e == 0 ||
 		config->top_right_corner_n == 0 || config->bottom_left_corner_e == 0 || config->bottom_left_corner_n == 0 ||
 		config->bottom_right_corner_e == 0 || config->bottom_right_corner_n == 0 || config->depth == 0 ||
-		config->depth_interval == 0 || config->p0 == 0 || config->p1 == 0 || config->p2 == 0 || config->p3 == 0 ||
-		config->p4 == 0 || config->p5 == 0) {
+		config->depth_interval == 0 ) {
 		print_error("One configuration parameter not specified. Please check your configuration file.");
 		return FAIL;
 	}
@@ -443,13 +398,14 @@ double imperial_calculate_density(double vp) {
 
      vp = vp * 0.001;
      retVal = vp * (1.6612 - vp * (0.4721 - vp * (0.0671 - vp * (0.0043 - vp * 0.000106))));
-     if (retVal < 1.0):
-       retVal = 1.0
+     if (retVal < 1.0) {
+       retVal = 1.0;
+     }
      retVal = retVal * 1000.0;
      return retVal;
 }
 
-**
+/**
  * Calculates the vs based off of Vp. Base on Brocher's formulae
  *
  * https://pubs.usgs.gov/of/2005/1317/of2005-1317.pdf
@@ -464,7 +420,7 @@ double imperial_calculate_vs(double vp) {
      double retVal ;
 
      vp = vp * 0.001;
-     retVal = 0.7858 – vp *(1.2344 + vp *( 0.7949 – vp *(0.1238V + vp * 0.0064)));
+     retVal = 0.7858 - vp * (1.2344 + vp * ( 0.7949 - vp * (0.1238 + vp * 0.0064)));
      retVal = retVal * 1000.0;
      return retVal;
 }

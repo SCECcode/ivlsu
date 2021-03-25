@@ -21,16 +21,6 @@ AC_C_CONST
 
 # Checks for library functions.
 
-AC_ARG_WITH([etree-include-path],
-  [AS_HELP_STRING([--with-etree-include-path],
-    [location of the Etree headers])],
-  [ETREE_INCL="-I$withval"],
-  [ETREE_INCL=""])
-AC_ARG_WITH([etree-lib-path],
-  [AS_HELP_STRING([--with-etree-lib-path], [location of the Etree libraries])],
-  [ETREE_LIB="-L$withval -letree"],
-  [ETREE_LIB="-letree"])
-
 # Get required Proj.4 library and include locations
 AC_ARG_WITH([proj4-include-path],
   [AS_HELP_STRING([--with-proj4-include-path],
@@ -41,11 +31,6 @@ AC_ARG_WITH([proj4-lib-path],
   [AS_HELP_STRING([--with-proj4-lib-path], [location of the Proj.4 libraries])],
   [PROJ4_LIB="-L$withval -lproj -pthread"],
   [PROJ4_LIB="-lproj -pthread"])
-
-# Check required ETREE installation
-CFLAGS="$ETREE_INCL $CHECK_CFLAGS"
-LDFLAGS="$CHECK_LDFLAGS $ETREE_LIB"
-AC_CHECK_LIB(etree, etree_open, [AC_CHECK_HEADER([etree.h], [], [AC_MSG_ERROR(["Etree headers not found in $ETREE_INCL; use --with-etree-include-path"])], [AC_INCLUDES_DEFAULT])],[AC_MSG_ERROR(["Etree library not found; use --with-etree-lib-path"])])
 
 # Check required PROJ4 installation
 CFLAGS="$PROJ4_INCL $CHECK_CFLAGS"
