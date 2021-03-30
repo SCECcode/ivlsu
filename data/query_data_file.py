@@ -41,7 +41,7 @@ target_depth = 0
 def main():
 
     zone=11
-    f_vp = open("./iv/vp.dat")
+    f_vp = open("./ivlsu/vp.dat")
     vp_arr = np.fromfile(f_vp, dtype=np.float32)
     f_vp.close()
 

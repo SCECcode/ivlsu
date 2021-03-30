@@ -88,9 +88,9 @@ def main():
 
     f = open("./IV33.dat.txt")
 
-    f_vp = open("./iv/vp.dat", "wb")
-    f_easting = open("./iv/easting.dat", "wb")
-    f_northing = open("./iv/northing.dat", "wb")
+    f_vp = open("./ivlsu/vp.dat", "wb")
+    f_easting = open("./ivlsu/easting.dat", "wb")
+    f_northing = open("./ivlsu/northing.dat", "wb")
 
     vp_arr = array.array('f', (-1.0,) * (dimension_x * dimension_y * dimension_z))
     easting_arr = array.array('i', (-1,) * (dimension_x * dimension_y * dimension_z))

@@ -39,7 +39,7 @@ def usage():
 def main():
     total_cnt=0
     f = open("./IV33.dat.txt")
-    f_vp = open("./iv/vp.dat")
+    f_vp = open("./ivlsu/vp.dat")
     vp_arr = np.fromfile(f_vp, dtype=np.float32)
 
     x_pos=0;

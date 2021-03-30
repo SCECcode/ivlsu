@@ -8,4 +8,4 @@ AM_LDFLAGS = ${LDFLAGS}
 install:
 	mkdir -p ${prefix}/data/imperial
 	cp ./config ${prefix}/data
-	cp -R ./iv ${prefix}/data
+	cp -R ./ivlsu ${prefix}/data
