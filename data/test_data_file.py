@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 
 ##
-#  Retrieve the easting/norhting from the original data txt file and
-#  and retrieve the material properties from binary vp.dat file 
+#  Retrieve the data files and retrieve the content
+#  ./make_data_file.py > ii
+#  ./test_data_file.py > oo
+#  cat ii oo | sort | uniq -c |sort > zz
+#  should be 2x of every valid entries in the model
 #
-## import utm
-## (rlat_v, rlon_v) = utm.to_latlon(easting_v*1000, northing_v*1000, zone, 'S')
-## lat_v=float('%.6f'%rlat_v)
-## lon_v=float('%.6f'%rlon_v)
 
 import getopt
 import sys
 import subprocess
 import struct
 import numpy as np
+import pdb
 
 dimension_x = 66
-dimension_y = 86 
+dimension_y = 86
 dimension_z = 9
 
 lon_origin = -116.051578
@@ -29,72 +29,48 @@ northing_origin = 3607
 easting_upper = 654
 northing_upper = 3692
 
-delta_easting = (easting_upper - easting_origin )/(dimension_x-1)
-delta_northing = (northing_upper - northing_origin)/(dimension_y-1)
+
+delta_lon = (lon_upper - lon_origin )/(dimension_x-1)
+delta_lat = (lat_upper - lat_origin)/(dimension_y-1)
 
 def usage():
-    print("\n./query_data_files.py\n\n")
+    print("\n./test_data_files.py\n\n")
     sys.exit(0)
 
+def myrange(start, end, step):
+    while start < end+(step/2):
+        yield start
+        start = start + step
+
 def main():
-    total_cnt=0
-    f = open("./IV33.dat.txt")
+
     f_vp = open("./ivlsu/vp.dat")
     vp_arr = np.fromfile(f_vp, dtype=np.float32)
-
-    x_pos=0;
-    y_pos=0;
-    z_pos=0;
-    for line in f:
-        arr = line.split()
-
-        easting_v = int(arr[0])
-        northing_v = int(arr[1])
-        depth_v = int(arr[2])
-        rvp_v = float(arr[3]) * 1000.0
-        vp_v = float("%0.1f" % rvp_v)
-
-        x_pos = int(round((easting_v - easting_origin) / delta_easting))
-        y_pos = int(round((northing_v - northing_origin) / delta_northing))
-        z_pos = int(depth_v)
-
-        loc =z_pos * (dimension_y * dimension_x) + (y_pos * dimension_x) + x_pos
-        fvp= float("%0.1f" % vp_arr[loc].item())
-        
-        if(vp_v != fvp):
-           print total_cnt,"BAD",vp_v,"fvp",fvp
-           
-        total_cnt = total_cnt + 1
-
     f_vp.close()
-    print "DONE with total_cnt ",total_cnt
 
-## dump all
-def dump():
-    f_vp = open("./iv/vp.dat")
-    f_vp.close()
-    count=0
-    x_pos =0
-    y_pos =0
-    z_pos =0
+    lon_start = lon_origin
+    lat_start = lat_origin
+    nan_cnt=0
+    total_cnt=0
 
-    while(1) :
-      offset=z_pos * (dimension_y * dimension_x) + (y_pos * dimension_x) + x_pos
-      vp=vp_arr[offset];
-      print count,"xyz:", x_pos,y_pos,z_pos,">> vp", vp
+    for lon_v in myrange(lon_origin, lon_upper, delta_lon):
+        for lat_v in myrange(lat_origin, lat_upper, delta_lat) :
+            for depth_v in xrange(9) :
+               y_pos = int(round((lat_v - lat_origin) / delta_lat))
+               x_pos = int(round((lon_v - lon_origin) / delta_lon))
+               z_pos = int(depth_v)
 
-      count = count + 1
-      x_pos = x_pos + 1
-      if(x_pos == dimension_x) :
-        x_pos = 0;
-        y_pos = y_pos+1
-        if(y_pos == dimension_y) :
-          y_pos=0;
-          z_pos = z_pos+1
-          if(z_pos == dimension_z) :
-            print "Done! count ",count
-            exit(0)
+               offset=z_pos * (dimension_y * dimension_x) + (y_pos * dimension_x) + x_pos
+               vp=vp_arr[offset];
 
+               total_cnt=total_cnt+1
+               if vp != -1 :
+                 print x_pos," ",y_pos," ",z_pos," >> ",lon_v," ",lat_v," ",float(depth_v)," ",vp
+               else :
+                 nan_cnt=nan_cnt+1
+                 print "NAN", x_pos," ",y_pos," ",z_pos," >> ",lon_v," ",lat_v," ",float(depth_v)," ",vp
+
+    print("Done! with NaN",nan_cnt,"total",total_cnt)
 
 if __name__ == "__main__":
     main()

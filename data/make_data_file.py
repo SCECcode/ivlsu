@@ -106,13 +106,20 @@ def main():
     for line in f:
         arr = line.split()
 
+        vp = -1.0
         easting_v = int(arr[0])
         northing_v = int(arr[1])
         depth_v = int(arr[2])
-        vp_v = float(arr[3])
+        tmp = arr[3]
+
+        if( tmp != "NaN" ) :
+           vp = float(tmp)
+           vp = vp * 1000.0;
+        else:
+           nan_cnt = nan_cnt + 1
+
         total_cnt = total_cnt + 1
 
-        vp = vp_v * 1000.0;
         loc =z_pos * (dimension_y * dimension_x) + (y_pos * dimension_x) + x_pos
         vp_arr[loc] = vp
         easting_arr[loc] = easting_v
@@ -140,7 +147,7 @@ def main():
     f_easting.close()
     f_northing.close()
 
-    print("Done! total", total_cnt)
+    print("Done! with NaN", nan_cnt, "toal", total_cnt)
 
 if __name__ == "__main__":
     main()
