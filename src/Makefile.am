@@ -2,7 +2,6 @@
 
 # General compiler/linker flags
 AM_CFLAGS = ${CFLAGS}
-AM_FCFLAGS = ${FCFLAGS}
 AM_LDFLAGS = ${LDFLAGS}
 
 TARGETS = libimperial.a libimperial.so
@@ -21,7 +20,7 @@ libimperial.a: imperial_static.o
 	$(AR) rcs $@ $^
 
 libimperial.so: imperial.o
-	$(FC) -shared $(AM_FCFLAGS) -o libimperial.so $^ $(AM_LDFLAGS)
+	$(CC) -shared $(AM_CFLAGS) -o libimperial.so $^ $(AM_LDFLAGS)
 
 imperial.o: imperial.c
 	$(CC) -fPIC -DDYNAMIC_LIBRARY -o $@ -c $^ $(AM_CFLAGS)
