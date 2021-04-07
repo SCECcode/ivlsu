@@ -6,6 +6,6 @@ AM_FCFLAGS = ${FCFLAGS}
 AM_LDFLAGS = ${LDFLAGS}
 
 install:
-	mkdir -p ${prefix}/data/imperial
+	mkdir -p ${prefix}/data
 	cp ./config ${prefix}/data
 	cp -R ./ivlsu ${prefix}/data
