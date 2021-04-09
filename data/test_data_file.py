@@ -65,7 +65,7 @@ def main():
 
                total_cnt=total_cnt+1
                if vp != -1 :
-                 print x_pos," ",y_pos," ",z_pos," >> ",lon_v," ",lat_v," ",float(depth_v)," ",vp
+                 print offset,":",x_pos," ",y_pos," ",z_pos," >> ",lon_v," ",lat_v," ",float(depth_v)," ",vp
                else :
                  nan_cnt=nan_cnt+1
                  print "NAN", x_pos," ",y_pos," ",z_pos," >> ",lon_v," ",lat_v," ",float(depth_v)," ",vp

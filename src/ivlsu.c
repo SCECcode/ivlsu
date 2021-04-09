@@ -66,7 +66,8 @@ int ivlsu_init(const char *dir, const char *label) {
                 print_error("Could not set up latitude and longitude projection.");
                 return FAIL;
         }
-        if (!(ivlsu_utm = pj_init_plus("+proj=utm +zone=11 +ellps=clrk66 +datum=NAD27 +units=m +no_defs"))) {
+//        if (!(ivlsu_utm = pj_init_plus("+proj=utm +zone=11 +ellps=clrk66 +datum=NAD27 +units=m +no_defs"))) {
+        if (!(ivlsu_utm = pj_init_plus("+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs"))) {
                 print_error("Could not set up UTM projection.");
                 return FAIL;
         }
@@ -102,16 +103,30 @@ int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) 
 	for (i = 0; i < numpoints; i++) {
 		lon_e = points[i].longitude; 
 		lat_n = points[i].latitude; 
+//printf(">>>before e/n %lf %lf\n", lon_e, lat_n);
+
+                point_utm_n = lat_n * DEG_TO_RAD;
+                point_utm_e = lon_e * DEG_TO_RAD;
 
                 // src to destination 
                 pj_transform(ivlsu_latlon, ivlsu_utm, 1, 1, &point_utm_e, &point_utm_n, NULL);
                 //utm_geo_(&lon_e, &lat_n, &point_utm_e, &point_utm_n, &zone, &longlat2utm);
+//printf("utm e/n %lf %lf \n",point_utm_e, point_utm_n);
+
+/*
+                // refine to km for testing 
+                double  tmp_utm_e = round(point_utm_e / 1000) * 1000;
+                double  tmp_utm_n = round(point_utm_n / 1000) * 1000;
+                point_utm_e = tmp_utm_e;
+                point_utm_n = tmp_utm_n;
+*/
 
 		// Which point base point does that correspond to?
 		load_y_coord = (int)(round((point_utm_n - ivlsu_configuration->bottom_left_corner_n) / delta_lat));
 		load_x_coord = (int)(round((point_utm_e - ivlsu_configuration->bottom_left_corner_e) / delta_lon));
 		load_z_coord = (int)((points[i].depth)/1000);
 
+//printf("coord, %d, %d, %d\n", load_x_coord, load_y_coord, load_z_coord);
 
 		// Are we outside the model's X and Y and Z boundaries?
 		if (points[i].depth > ivlsu_configuration->depth || load_x_coord > ivlsu_configuration->nx -1  || load_y_coord > ivlsu_configuration->ny -1 || load_x_coord < 0 || load_y_coord < 0 || load_z_coord < 0) {
@@ -190,6 +205,7 @@ void ivlsu_read_properties(int x, int y, int z, ivlsu_properties_t *data) {
 
 	int location = z * (ivlsu_configuration->nx * ivlsu_configuration->ny) + (y * ivlsu_configuration->nx) + x;
 
+//printf(">>> LOCATION ivlsu %d\n",location);
 	// Check our loaded components of the model.
 	if (ivlsu_velocity_model->vp_status == 2) {
 		// Read from memory.

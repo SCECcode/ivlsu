@@ -53,6 +53,7 @@ typedef struct ivlsu_properties_t {
         double qp;
         /** NOT USED from basic_property_t */
         double qs;
+
 } ivlsu_properties_t;
 
 /** The IMPERIAL configuration structure. */
