@@ -39,10 +39,6 @@ typedef struct ivlsu_point_t {
 	double latitude;
 	/** Depth member of the point */
 	double depth;
-        /** NOT USED from basic_property_t */
-        double qp;
-        /** NOT USED from basic_property_t */
-        double qs;
 } ivlsu_point_t;
 
 /** Defines the material properties this model will retrieve. */
@@ -53,6 +49,10 @@ typedef struct ivlsu_properties_t {
 	double vs;
 	/** Density in g/m^3 */
 	double rho;
+        /** NOT USED from basic_property_t */
+        double qp;
+        /** NOT USED from basic_property_t */
+        double qs;
 } ivlsu_properties_t;
 
 /** The IMPERIAL configuration structure. */
