@@ -1,5 +1,5 @@
 /**
- * @file imperial.c
+ * @file ivlsu.c
  * @brief Main file for IMPERIAL-LSU library.
  * @author - SCEC 
  * @version 1.0
@@ -10,7 +10,7 @@
  *
  */
 
-#include "imperial.h"
+#include "ivlsu.h"
 
 /**
  * Initializes the IMPERIAL plugin model within the UCVM framework. In order to initialize
@@ -21,26 +21,26 @@
  * @param label A unique identifier for the velocity model.
  * @return Success or failure, if initialization was successful.
  */
-int imperial_init(const char *dir, const char *label) {
+int ivlsu_init(const char *dir, const char *label) {
 	int tempVal = 0;
 	char configbuf[512];
 
 	// Initialize variables.
-	imperial_configuration = calloc(1, sizeof(imperial_configuration_t));
-	imperial_velocity_model = calloc(1, sizeof(imperial_model_t));
+	ivlsu_configuration = calloc(1, sizeof(ivlsu_configuration_t));
+	ivlsu_velocity_model = calloc(1, sizeof(ivlsu_model_t));
 
 	// Configuration file location.
 	sprintf(configbuf, "%s/model/%s/data/config", dir, label);
 
 	// Read the configuration file.
-	if (imperial_read_configuration(configbuf, imperial_configuration) != SUCCESS)
+	if (ivlsu_read_configuration(configbuf, ivlsu_configuration) != SUCCESS)
 		tempVal = FAIL;
 
 	// Set up the data directory.
-	sprintf(imperial_data_directory, "%s/model/%s/data/%s/", dir, label, imperial_configuration->model_dir);
+	sprintf(ivlsu_data_directory, "%s/model/%s/data/%s/", dir, label, ivlsu_configuration->model_dir);
 
 	// Can we allocate the model, or parts of it, to memory. If so, we do.
-	tempVal = imperial_try_reading_model(imperial_velocity_model);
+	tempVal = ivlsu_try_reading_model(ivlsu_velocity_model);
 
 	if (tempVal == SUCCESS) {
 		fprintf(stderr, "WARNING: Could not load model into memory. Reading the model from the\n");
@@ -55,24 +55,24 @@ int imperial_init(const char *dir, const char *label) {
 	// point so that is is somewhere between (0,0) and (total_width_m, total_height_m). How far along
 	// the X and Y axis determines which grid points we use for the interpolation routine.
 
-	imperial_total_height_m = sqrt(pow(imperial_configuration->top_left_corner_n - imperial_configuration->bottom_left_corner_n, 2.0f) +
-						  pow(imperial_configuration->top_left_corner_e - imperial_configuration->bottom_left_corner_e, 2.0f));
-	imperial_total_width_m  = sqrt(pow(imperial_configuration->top_right_corner_n - imperial_configuration->top_left_corner_n, 2.0f) +
-						  pow(imperial_configuration->top_right_corner_e - imperial_configuration->top_left_corner_e, 2.0f));
+	ivlsu_total_height_m = sqrt(pow(ivlsu_configuration->top_left_corner_n - ivlsu_configuration->bottom_left_corner_n, 2.0f) +
+						  pow(ivlsu_configuration->top_left_corner_e - ivlsu_configuration->bottom_left_corner_e, 2.0f));
+	ivlsu_total_width_m  = sqrt(pow(ivlsu_configuration->top_right_corner_n - ivlsu_configuration->top_left_corner_n, 2.0f) +
+						  pow(ivlsu_configuration->top_right_corner_e - ivlsu_configuration->top_left_corner_e, 2.0f));
 
 
         // We need to convert the point from lat, lon to UTM, let's set it up.
-        if (!(imperial_latlon = pj_init_plus("+proj=latlong +datum=WGS84"))) {
+        if (!(ivlsu_latlon = pj_init_plus("+proj=latlong +datum=WGS84"))) {
                 print_error("Could not set up latitude and longitude projection.");
                 return FAIL;
         }
-        if (!(imperial_utm = pj_init_plus("+proj=utm +zone=11 +ellps=clrk66 +datum=NAD27 +units=m +no_defs"))) {
+        if (!(ivlsu_utm = pj_init_plus("+proj=utm +zone=11 +ellps=clrk66 +datum=NAD27 +units=m +no_defs"))) {
                 print_error("Could not set up UTM projection.");
                 return FAIL;
         }
 
 	// Let everyone know that we are initialized and ready for business.
-	imperial_is_initialized = 1;
+	ivlsu_is_initialized = 1;
 
 	return SUCCESS;
 }
@@ -85,36 +85,36 @@ int imperial_init(const char *dir, const char *label) {
  * @param numpoints The total number of points to query.
  * @return SUCCESS or FAIL.
  */
-int imperial_query(imperial_point_t *points, imperial_properties_t *data, int numpoints) {
+int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) {
 	int i = 0;
 	int load_x_coord = 0, load_y_coord = 0, load_z_coord = 0;
 	double x_percent = 0, y_percent = 0, z_percent = 0;
-	imperial_properties_t surrounding_points[8];
+	ivlsu_properties_t surrounding_points[8];
         double lon_e, lat_n;
 
 	int zone = 11;
 	int longlat2utm = 0;
         double point_utm_e = 0, point_utm_n = 0;
 
-        double delta_lon = (imperial_configuration->top_right_corner_e - imperial_configuration->bottom_left_corner_e)/(imperial_configuration->nx - 1);
-        double delta_lat = (imperial_configuration->top_right_corner_n - imperial_configuration->bottom_left_corner_n)/(imperial_configuration->ny - 1);
+        double delta_lon = (ivlsu_configuration->top_right_corner_e - ivlsu_configuration->bottom_left_corner_e)/(ivlsu_configuration->nx - 1);
+        double delta_lat = (ivlsu_configuration->top_right_corner_n - ivlsu_configuration->bottom_left_corner_n)/(ivlsu_configuration->ny - 1);
 
 	for (i = 0; i < numpoints; i++) {
 		lon_e = points[i].longitude; 
 		lat_n = points[i].latitude; 
 
                 // src to destination 
-                pj_transform(imperial_latlon, imperial_utm, 1, 1, &point_utm_e, &point_utm_n, NULL);
+                pj_transform(ivlsu_latlon, ivlsu_utm, 1, 1, &point_utm_e, &point_utm_n, NULL);
                 //utm_geo_(&lon_e, &lat_n, &point_utm_e, &point_utm_n, &zone, &longlat2utm);
 
 		// Which point base point does that correspond to?
-		load_y_coord = (int)(round((point_utm_n - imperial_configuration->bottom_left_corner_n) / delta_lat));
-		load_x_coord = (int)(round((point_utm_e - imperial_configuration->bottom_left_corner_e) / delta_lon));
+		load_y_coord = (int)(round((point_utm_n - ivlsu_configuration->bottom_left_corner_n) / delta_lat));
+		load_x_coord = (int)(round((point_utm_e - ivlsu_configuration->bottom_left_corner_e) / delta_lon));
 		load_z_coord = (int)((points[i].depth)/1000);
 
 
 		// Are we outside the model's X and Y and Z boundaries?
-		if (points[i].depth > imperial_configuration->depth || load_x_coord > imperial_configuration->nx -1  || load_y_coord > imperial_configuration->ny -1 || load_x_coord < 0 || load_y_coord < 0 || load_z_coord < 0) {
+		if (points[i].depth > ivlsu_configuration->depth || load_x_coord > ivlsu_configuration->nx -1  || load_y_coord > ivlsu_configuration->ny -1 || load_x_coord < 0 || load_y_coord < 0 || load_z_coord < 0) {
 			data[i].vp = -1;
 			data[i].vs = -1;
 			data[i].rho = -1;
@@ -122,48 +122,48 @@ int imperial_query(imperial_point_t *points, imperial_properties_t *data, int nu
 		}
 
 		// Get the X, Y, and Z percentages for the bilinear or trilinear interpolation below.
-		x_percent =fmod((point_utm_e - imperial_configuration->bottom_left_corner_e), delta_lon) /delta_lon;
-		y_percent = fmod((point_utm_n - imperial_configuration->bottom_left_corner_n), delta_lat)/
+		x_percent =fmod((point_utm_e - ivlsu_configuration->bottom_left_corner_e), delta_lon) /delta_lon;
+		y_percent = fmod((point_utm_n - ivlsu_configuration->bottom_left_corner_n), delta_lat)/
 delta_lat;
-		z_percent = fmod(points[i].depth, imperial_configuration->depth_interval) / imperial_configuration->depth_interval;
+		z_percent = fmod(points[i].depth, ivlsu_configuration->depth_interval) / ivlsu_configuration->depth_interval;
 
 		if (load_z_coord == 0 && z_percent == 0) {
 			// We're below the model boundaries. Bilinearly interpolate the bottom plane and use that value.
 			load_z_coord = 0;
-                   if(imperial_configuration->interpolation) {
+                   if(ivlsu_configuration->interpolation) {
 
 			// Get the four properties.
-			imperial_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));	// Orgin.
-			imperial_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));	// Orgin + 1x
-			imperial_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));	// Orgin + 1y
-			imperial_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));	// Orgin + x + y, forms top plane.
+			ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));	// Orgin.
+			ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));	// Orgin + 1x
+			ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));	// Orgin + 1y
+			ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));	// Orgin + x + y, forms top plane.
 
-			imperial_bilinear_interpolation(x_percent, y_percent, surrounding_points, &(data[i]));
+			ivlsu_bilinear_interpolation(x_percent, y_percent, surrounding_points, &(data[i]));
                   } else {
-			imperial_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(data[i]));	// Orgin.
+			ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(data[i]));	// Orgin.
                   }
 
 		} else {
-		  if( imperial_configuration->interpolation) {
+		  if( ivlsu_configuration->interpolation) {
 			// Read all the surrounding point properties.
-			imperial_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));	// Orgin.
-			imperial_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));	// Orgin + 1x
-			imperial_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));	// Orgin + 1y
-			imperial_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));	// Orgin + x + y, forms top plane.
-			imperial_read_properties(load_x_coord,     load_y_coord,     load_z_coord - 1, &(surrounding_points[4]));	// Bottom plane origin
-			imperial_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord - 1, &(surrounding_points[5]));	// +1x
-			imperial_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord - 1, &(surrounding_points[6]));	// +1y
-			imperial_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord - 1, &(surrounding_points[7]));	// +x +y, forms bottom plane.
+			ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));	// Orgin.
+			ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));	// Orgin + 1x
+			ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));	// Orgin + 1y
+			ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));	// Orgin + x + y, forms top plane.
+			ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord - 1, &(surrounding_points[4]));	// Bottom plane origin
+			ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord - 1, &(surrounding_points[5]));	// +1x
+			ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord - 1, &(surrounding_points[6]));	// +1y
+			ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord - 1, &(surrounding_points[7]));	// +x +y, forms bottom plane.
 
-			imperial_trilinear_interpolation(x_percent, y_percent, z_percent, surrounding_points, &(data[i]));
+			ivlsu_trilinear_interpolation(x_percent, y_percent, z_percent, surrounding_points, &(data[i]));
                     } else {
                         // no interpolation, data as it is
-			imperial_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(data[i]));	// Orgin.
+			ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(data[i]));	// Orgin.
                     }
 		}
 
-		data[i].rho = imperial_calculate_density(data[i].vp);
-		data[i].vs = imperial_calculate_vs(data[i].vp);
+		data[i].rho = ivlsu_calculate_density(data[i].vp);
+		data[i].vs = ivlsu_calculate_vs(data[i].vp);
 	}
 
 	return SUCCESS;
@@ -178,7 +178,7 @@ delta_lat;
  * @param z The z coordinate of the data point.
  * @param data The properties struct to which the material properties will be written.
  */
-void imperial_read_properties(int x, int y, int z, imperial_properties_t *data) {
+void ivlsu_read_properties(int x, int y, int z, ivlsu_properties_t *data) {
 
 	// Set everything to -1 to indicate not found.
 	data->vp = -1;
@@ -188,14 +188,14 @@ void imperial_read_properties(int x, int y, int z, imperial_properties_t *data) 
 	float *ptr = NULL;
 	FILE *fp = NULL;
 
-	int location = z * (imperial_configuration->nx * imperial_configuration->ny) + (y * imperial_configuration->nx) + x;
+	int location = z * (ivlsu_configuration->nx * ivlsu_configuration->ny) + (y * ivlsu_configuration->nx) + x;
 
 	// Check our loaded components of the model.
-	if (imperial_velocity_model->vp_status == 2) {
+	if (ivlsu_velocity_model->vp_status == 2) {
 		// Read from memory.
-		ptr = (float *)imperial_velocity_model->vp;
+		ptr = (float *)ivlsu_velocity_model->vp;
 		data->vp = ptr[location];
-	} else if (imperial_velocity_model->vp_status == 1) {
+	} else if (ivlsu_velocity_model->vp_status == 1) {
 		// Read from file.
 		fseek(fp, location * sizeof(float), SEEK_SET);
 		fread(&(data->vp), sizeof(float), 1, fp);
@@ -212,21 +212,21 @@ void imperial_read_properties(int x, int y, int z, imperial_properties_t *data) 
  * @param eight_points Eight surrounding data properties
  * @param ret_properties Returned data properties
  */
-void imperial_trilinear_interpolation(double x_percent, double y_percent, double z_percent,
-							 imperial_properties_t *eight_points, imperial_properties_t *ret_properties) {
-	imperial_properties_t *temp_array = calloc(2, sizeof(imperial_properties_t));
-	imperial_properties_t *four_points = eight_points;
+void ivlsu_trilinear_interpolation(double x_percent, double y_percent, double z_percent,
+							 ivlsu_properties_t *eight_points, ivlsu_properties_t *ret_properties) {
+	ivlsu_properties_t *temp_array = calloc(2, sizeof(ivlsu_properties_t));
+	ivlsu_properties_t *four_points = eight_points;
 
-	imperial_bilinear_interpolation(x_percent, y_percent, four_points, &temp_array[0]);
+	ivlsu_bilinear_interpolation(x_percent, y_percent, four_points, &temp_array[0]);
 
-	// Now advance the pointer four "imperial_properties_t" spaces.
+	// Now advance the pointer four "ivlsu_properties_t" spaces.
 	four_points += 4;
 
 	// Another interpolation.
-	imperial_bilinear_interpolation(x_percent, y_percent, four_points, &temp_array[1]);
+	ivlsu_bilinear_interpolation(x_percent, y_percent, four_points, &temp_array[1]);
 
 	// Now linearly interpolate between the two.
-	imperial_linear_interpolation(z_percent, &temp_array[0], &temp_array[1], ret_properties);
+	ivlsu_linear_interpolation(z_percent, &temp_array[0], &temp_array[1], ret_properties);
 
 	free(temp_array);
 }
@@ -240,13 +240,13 @@ void imperial_trilinear_interpolation(double x_percent, double y_percent, double
  * @param four_points Data property plane.
  * @param ret_properties Returned data properties.
  */
-void imperial_bilinear_interpolation(double x_percent, double y_percent, imperial_properties_t *four_points, imperial_properties_t *ret_properties) {
+void ivlsu_bilinear_interpolation(double x_percent, double y_percent, ivlsu_properties_t *four_points, ivlsu_properties_t *ret_properties) {
 
-	imperial_properties_t *temp_array = calloc(2, sizeof(imperial_properties_t));
+	ivlsu_properties_t *temp_array = calloc(2, sizeof(ivlsu_properties_t));
 
-	imperial_linear_interpolation(x_percent, &four_points[0], &four_points[1], &temp_array[0]);
-	imperial_linear_interpolation(x_percent, &four_points[2], &four_points[3], &temp_array[1]);
-	imperial_linear_interpolation(y_percent, &temp_array[0], &temp_array[1], ret_properties);
+	ivlsu_linear_interpolation(x_percent, &four_points[0], &four_points[1], &temp_array[0]);
+	ivlsu_linear_interpolation(x_percent, &four_points[2], &four_points[3], &temp_array[1]);
+	ivlsu_linear_interpolation(y_percent, &temp_array[0], &temp_array[1], ret_properties);
 
 	free(temp_array);
 }
@@ -259,7 +259,7 @@ void imperial_bilinear_interpolation(double x_percent, double y_percent, imperia
  * @param x1 Data point at x1.
  * @param ret_properties Resulting data properties.
  */
-void imperial_linear_interpolation(double percent, imperial_properties_t *x0, imperial_properties_t *x1, imperial_properties_t *ret_properties) {
+void ivlsu_linear_interpolation(double percent, ivlsu_properties_t *x0, ivlsu_properties_t *x1, ivlsu_properties_t *ret_properties) {
 
 	ret_properties->vp  = (1 - percent) * x0->vp  + percent * x1->vp;
 	ret_properties->vs  = (1 - percent) * x0->vs  + percent * x1->vs;
@@ -271,13 +271,13 @@ void imperial_linear_interpolation(double percent, imperial_properties_t *x0, im
  *
  * @return SUCCESS
  */
-int imperial_finalize() {
-        pj_free(imperial_latlon);
-        pj_free(imperial_utm);
+int ivlsu_finalize() {
+        pj_free(ivlsu_latlon);
+        pj_free(ivlsu_utm);
 
-	if (imperial_velocity_model->vp) free(imperial_velocity_model->vp);
+	if (ivlsu_velocity_model->vp) free(ivlsu_velocity_model->vp);
 
-	free(imperial_configuration);
+	free(ivlsu_configuration);
 
 	return SUCCESS;
 }
@@ -289,15 +289,15 @@ int imperial_finalize() {
  * @param len Maximum length of buffer.
  * @return Zero
  */
-int imperial_version(char *ver, int len)
+int ivlsu_version(char *ver, int len)
 {
   int verlen;
-  verlen = strlen(imperial_version_string);
+  verlen = strlen(ivlsu_version_string);
   if (verlen > len - 1) {
     verlen = len - 1;
   }
   memset(ver, 0, len);
-  strncpy(ver, imperial_version_string, verlen);
+  strncpy(ver, ivlsu_version_string, verlen);
   return 0;
 }
 
@@ -310,7 +310,7 @@ int imperial_version(char *ver, int len)
  * @param config The configuration struct to which the data should be written.
  * @return Success or failure, depending on if file was read successfully.
  */
-int imperial_read_configuration(char *file, imperial_configuration_t *config) {
+int ivlsu_read_configuration(char *file, ivlsu_configuration_t *config) {
 	FILE *fp = fopen(file, "r");
 	char key[40];
 	char value[80];
@@ -393,7 +393,7 @@ int imperial_read_configuration(char *file, imperial_configuration_t *config) {
  * Equation 6 is the “Nafe-Drake curve” (Ludwig et al., 1970).
  * start with vp in km 
  */
-double imperial_calculate_density(double vp) {
+double ivlsu_calculate_density(double vp) {
      double retVal ;
 
      vp = vp * 0.001;
@@ -416,7 +416,7 @@ double imperial_calculate_density(double vp) {
  * [eqn. 1] Vs (km/s) = 0.7858 – 1.2344Vp + 0.7949Vp2 – 0.1238Vp3 + 0.0064Vp4.
  * Equation 1 is valid for 1.5 < Vp < 8 km/s.
  */
-double imperial_calculate_vs(double vp) {
+double ivlsu_calculate_vs(double vp) {
      double retVal ;
 
      vp = vp * 0.001;
@@ -445,15 +445,15 @@ void print_error(char *err) {
  * @return 2 if all files are read to memory, SUCCESS if file is found but at least 1
  * is not in memory, FAIL if no file found.
  */
-int imperial_try_reading_model(imperial_model_t *model) {
-	double base_malloc = imperial_configuration->nx * imperial_configuration->ny * imperial_configuration->nz * sizeof(float);
+int ivlsu_try_reading_model(ivlsu_model_t *model) {
+	double base_malloc = ivlsu_configuration->nx * ivlsu_configuration->ny * ivlsu_configuration->nz * sizeof(float);
 	int file_count = 0;
 	int all_read_to_memory = 1;
 	char current_file[128];
 	FILE *fp;
 
 	// Let's see what data we actually have.
-	sprintf(current_file, "%s/vp.dat", imperial_data_directory);
+	sprintf(current_file, "%s/vp.dat", ivlsu_data_directory);
 	if (access(current_file, R_OK) == 0) {
 		model->vp = malloc(base_malloc);
 		if (model->vp != NULL) {
@@ -483,58 +483,58 @@ int imperial_try_reading_model(imperial_model_t *model) {
 #ifdef DYNAMIC_LIBRARY
 
 /**
- * Init function loaded and called by the UCVM library. Calls imperial_init.
+ * Init function loaded and called by the UCVM library. Calls ivlsu_init.
  *
  * @param dir The directory in which UCVM is installed.
  * @return Success or failure.
  */
 int model_init(const char *dir, const char *label) {
-	return imperial_init(dir, label);
+	return ivlsu_init(dir, label);
 }
 
 /**
- * Query function loaded and called by the UCVM library. Calls imperial_query.
+ * Query function loaded and called by the UCVM library. Calls ivlsu_query.
  *
  * @param points The basic_point_t array containing the points.
  * @param data The basic_properties_t array containing the material properties returned.
  * @param numpoints The number of points in the array.
  * @return Success or fail.
  */
-int model_query(imperial_point_t *points, imperial_properties_t *data, int numpoints) {
-	return imperial_query(points, data, numpoints);
+int model_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) {
+	return ivlsu_query(points, data, numpoints);
 }
 
 /**
- * Finalize function loaded and called by the UCVM library. Calls imperial_finalize.
+ * Finalize function loaded and called by the UCVM library. Calls ivlsu_finalize.
  *
  * @return Success
  */
 int model_finalize() {
-	return imperial_finalize();
+	return ivlsu_finalize();
 }
 
 /**
- * Version function loaded and called by the UCVM library. Calls imperial_version.
+ * Version function loaded and called by the UCVM library. Calls ivlsu_version.
  *
  * @param ver Version string to return.
  * @param len Maximum length of buffer.
  * @return Zero
  */
 int model_version(char *ver, int len) {
-	return imperial_version(ver, len);
+	return ivlsu_version(ver, len);
 }
 
 int (*get_model_init())(const char *, const char *) {
-        return &imperial_init;
+        return &ivlsu_init;
 }
-int (*get_model_query())(imperial_point_t *, imperial_properties_t *, int) {
-         return &imperial_query;
+int (*get_model_query())(ivlsu_point_t *, ivlsu_properties_t *, int) {
+         return &ivlsu_query;
 }
 int (*get_model_finalize())() {
-         return &imperial_finalize;
+         return &ivlsu_finalize;
 }
 int (*get_model_version())(char *, int) {
-         return &imperial_version;
+         return &ivlsu_version;
 }
 
 

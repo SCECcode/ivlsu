@@ -4,7 +4,7 @@
 AM_CFLAGS = ${CFLAGS}
 AM_LDFLAGS = ${LDFLAGS}
 
-TARGETS = libimperial.a libimperial.so
+TARGETS = libivlsu.a libivlsu.so
 
 all: $(TARGETS)
 
@@ -12,20 +12,20 @@ install:
 	mkdir -p ${prefix}
 	mkdir -p ${prefix}/lib
 	mkdir -p ${prefix}/include
-	cp libimperial.so ${prefix}/lib
-	cp libimperial.a ${prefix}/lib
-	cp imperial.h ${prefix}/include
+	cp libivlsu.so ${prefix}/lib
+	cp libivlsu.a ${prefix}/lib
+	cp ivlsu.h ${prefix}/include
 
-libimperial.a: imperial_static.o 
+libivlsu.a: ivlsu_static.o 
 	$(AR) rcs $@ $^
 
-libimperial.so: imperial.o
-	$(CC) -shared $(AM_CFLAGS) -o libimperial.so $^ $(AM_LDFLAGS)
+libivlsu.so: ivlsu.o
+	$(CC) -shared $(AM_CFLAGS) -o libivlsu.so $^ $(AM_LDFLAGS)
 
-imperial.o: imperial.c
+ivlsu.o: ivlsu.c
 	$(CC) -fPIC -DDYNAMIC_LIBRARY -o $@ -c $^ $(AM_CFLAGS)
 	
-imperial_static.o: imperial.c
+ivlsu_static.o: ivlsu.c
 	$(CC) -o $@ -c $^ $(AM_CFLAGS)
 	
 clean:

@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "imperial.h"
+#include "ivlsu.h"
 
 /**
  * Initializes and runs the test program. Tests link against the
@@ -26,11 +26,11 @@
 int main(int argc, const char* argv[]) {
 
 	// Declare the structures.
-	imperial_point_t pt;
-	imperial_properties_t ret;
+	ivlsu_point_t pt;
+	ivlsu_properties_t ret;
 
 	// Initialize the model.
-	assert(imperial_init("../", "imperial") == 0);
+	assert(ivlsu_init("../", "ivlsu") == 0);
 
 	printf("Loaded the model successfully.\n");
 
@@ -39,7 +39,7 @@ int main(int argc, const char* argv[]) {
 	pt.latitude = 34;
 	pt.depth = 0;
 
-	imperial_query(&pt, &ret, 1);
+	ivlsu_query(&pt, &ret, 1);
 
 	assert(ret.vs > 0);
 	assert(ret.vp > 0);
@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]) {
 	printf("Query was successful.\n");
 
 	// Close the model.
-	assert(imperial_finalize() == 0);
+	assert(ivlsu_finalize() == 0);
 
 	printf("Model closed successfully.\n");
 

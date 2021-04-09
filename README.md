@@ -9,11 +9,11 @@ version 19.4.0 or higher.
 
 ## Library
 
-The library ./lib/libimperial.a may be statically linked into any
+The library ./lib/libivlsu.a may be statically linked into any
 user application. Also, if your system supports dynamic linking,
-you will also have a ./lib/libimperial.so file that can be used
+you will also have a ./lib/libivlsu.so file that can be used
 for dynamic linking. The header file defining the API is located
-in ./include/imperial.h.
+in ./include/ivlsu.h.
 
 ## Contact the authors
 
