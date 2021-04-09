@@ -1,10 +1,10 @@
 /**
  * @file test.c
- * @brief Bootstraps the test framework for the IMPERIAL library.
+ * @brief Bootstraps the test framework for the IMPERIAL/IVLSU library.
  * @author - SCEC
  * @version 1.0
  *
- * Tests the ALBACORE library by loading it and executing the code as
+ * Tests the IMPERIAL/IVLSU library by loading it and executing the code as
  * UCVM would do it.
  *
  */

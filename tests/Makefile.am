@@ -1,6 +1,6 @@
 # Autoconf/automake file
 
-bin_PROGRAMS = test_imperial
+bin_PROGRAMS = test_ivlsu
 
 # General compiler/linker flags
 AM_CFLAGS = ${CFLAGS}
@@ -13,7 +13,7 @@ all: $(bin_PROGRAMS)
 
 install:
 	mkdir -p ${prefix}/tests
-	cp test_imperial ${prefix}/tests
+	cp test_ivlsu ${prefix}/tests
 
 test_ivlsu: $(objects)
 	$(CC) -o $@ $^ $(AM_CFLAGS) -L../src -livlsu $(AM_LDFLAGS)

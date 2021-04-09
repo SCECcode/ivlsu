@@ -39,6 +39,10 @@ typedef struct ivlsu_point_t {
 	double latitude;
 	/** Depth member of the point */
 	double depth;
+        /** NOT USED from basic_property_t */
+        double qp;
+        /** NOT USED from basic_property_t */
+        double qs;
 } ivlsu_point_t;
 
 /** Defines the material properties this model will retrieve. */
