@@ -397,7 +397,12 @@ double ivlsu_calculate_density(double vp) {
      double retVal ;
 
      vp = vp * 0.001;
-     retVal = vp * (1.6612 - vp * (0.4721 - vp * (0.0671 - vp * (0.0043 - vp * 0.000106))));
+     double t1 = (vp * 1.6612);
+     double t2 = ((vp * vp ) * 0.4721);
+     double t3 = ((vp * vp * vp) * 0.0671);
+     double t4 = ((vp * vp * vp * vp) * 0.0043);
+     double t5 = ((vp * vp * vp * vp * vp) * 0.000106);
+     retVal = t1 - t2 + t3 - t4 + t5;
      if (retVal < 1.0) {
        retVal = 1.0;
      }
@@ -420,7 +425,11 @@ double ivlsu_calculate_vs(double vp) {
      double retVal ;
 
      vp = vp * 0.001;
-     retVal = 0.7858 - vp * (1.2344 + vp * ( 0.7949 - vp * (0.1238 + vp * 0.0064)));
+     double t1= (vp * 1.2344);
+     double t2= ((vp * vp)* 0.7949);
+     double t3= ((vp * vp * vp) * 0.1238);
+     double t4= ((vp * vp * vp * vp) * 0.0064);
+     retVal = 0.7858 - t1 + t2 - t3 + t4;
      retVal = retVal * 1000.0;
      return retVal;
 }
