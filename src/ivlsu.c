@@ -33,11 +33,14 @@ int ivlsu_init(const char *dir, const char *label) {
 	sprintf(configbuf, "%s/model/%s/data/config", dir, label);
 
 	// Read the configuration file.
-	if (ivlsu_read_configuration(configbuf, ivlsu_configuration) != SUCCESS)
+	if (ivlsu_read_configuration(configbuf, ivlsu_configuration) != SUCCESS) {
 		tempVal = FAIL;
+                print_error("No configuration file was found to read from.");
+		return FAIL;
+        }
 
 	// Set up the data directory.
-	sprintf(ivlsu_data_directory, "%s/model/%s/data/%s/", dir, label, ivlsu_configuration->model_dir);
+	sprintf(ivlsu_data_directory, "%s/model/%s/data/%s", dir, label, ivlsu_configuration->model_dir);
 
 	// Can we allocate the model, or parts of it, to memory. If so, we do.
 	tempVal = ivlsu_try_reading_model(ivlsu_velocity_model);
