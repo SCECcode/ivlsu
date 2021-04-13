@@ -11,3 +11,4 @@ install:
 	cp -R ./ivlsu ${prefix}/data
 	chmod og+r ${prefix}/data/config
 	chmod -R og+r ${prefix}/data/ivlsu
+	chmod og+x ${prefix}/data/ivlsu
