@@ -8,5 +8,6 @@ AM_LDFLAGS = ${LDFLAGS}
 install:
 	mkdir -p ${prefix}/data
 	cp ./config ${prefix}/data
-	chmod og+rx ivlsu
 	cp -R ./ivlsu ${prefix}/data
+	chmod og+r ${prefix}/data/config
+	chmod -R og+r ${prefix}/data/ivlsu
