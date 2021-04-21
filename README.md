@@ -1,6 +1,6 @@
 # Imperial  
 
-SIP Imperial Valley velocity model
+SSIP Imperial Valley velocity model
 
 ## Installation
 
