@@ -69,7 +69,6 @@ int ivlsu_init(const char *dir, const char *label) {
                 print_error("Could not set up latitude and longitude projection.");
                 return FAIL;
         }
-//        if (!(ivlsu_utm = pj_init_plus("+proj=utm +zone=11 +ellps=clrk66 +datum=NAD27 +units=m +no_defs"))) {
         if (!(ivlsu_utm = pj_init_plus("+proj=utm +zone=11 +datum=WGS84 +units=m +no_defs"))) {
                 print_error("Could not set up UTM projection.");
                 return FAIL;
