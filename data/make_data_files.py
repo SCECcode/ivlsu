@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 ##
 #  Builds the data files in the expected format from IV33.dat.txt
 #
@@ -19,7 +18,11 @@ import sys
 import subprocess
 import struct
 import array
-import pdb
+
+if sys.version_info.major >= (3) :
+  from urllib.request import urlopen
+else:
+  from urllib2 import urlopen
 
 ##import osr
 ##def transform_utm_to_wgs84(easting, northing, zone):
@@ -40,48 +43,108 @@ import pdb
 
 ## at hypocenter  LSU/IV33.dat.txt
 
-model = "LSU"
+model = "IVLSU"
 
-dimension_x = 66
-dimension_y = 86 
-dimension_z = 9
+dimension_x = 0
+dimension_y = 0 
+dimension_z = 0
 
-lon_origin = -116.051578
-lat_origin = 32.596922
+lon_origin = 0
+lat_origin = 0
 
-lon_upper = -115.344866
-lat_upper = 33.356203
-
-delta_lon = (lon_upper - lon_origin )/(dimension_x-1)
-delta_lat = (lat_upper - lat_origin)/(dimension_y-1)
+lon_upper = 0
+lat_upper = 0
 
 def usage():
-    print("\n./make_data_files.py -u [uid]\n\n")
-    print("-u - username to use to do the dataset retrieval.\n")
+    print("\n./make_data_files.py\n\n")
     sys.exit(0)
+
+def download_urlfile(url,fname):
+  try:
+    response = urlopen(url)
+    CHUNK = 16 * 1024
+    with open(fname, 'wb') as f:
+      while True:
+        chunk = response.read(CHUNK)
+        if not chunk:
+          break
+        f.write(chunk)
+  except:
+    e = sys.exc_info()[0]
+    print("Exception retrieving and saving model datafiles:",e)
+    raise
+  return True
 
 def main():
 
     # Set our variable defaults.
-    username = ""
-    path = "/var/www/html/research/ucvmc/" + model 
+    path = ""
+    mdir = ""
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "u:", ["user="])
-    except getopt.GetoptError as err:
-        print(str(err))
-        usage()
+        fp = open('./config','r')
+    except:
+        print("ERROR: failed to open config file")
         sys.exit(1)
 
-    for o, a in opts:
-        if o in ("-u", "--user"):
-            username = str(a) + "@"
+    ## look for model_data_path and other varaibles
+    lines = fp.readlines()
+    for line in lines :
+        if line[0] == '#' :
+          continue
+        parts = line.split('=')
+        if len(parts) < 2 :
+          continue;
+        variable=parts[0].strip()
+        val=parts[1].strip()
 
-##
-##    subprocess.check_call(["scp", username +
-##                           "hypocenter.usc.edu:" + path + "/IV33.dat.txt",
-##                           "."])
-##
+        if (variable == 'model_data_path') :
+            path = val + '/' + model
+            continue
+        if (variable == 'model_dir') :
+            mdir = "./"+val
+            continue
+        if (variable == 'nx') :
+            dimension_x = int(val)
+            continue
+        if (variable == 'ny') :
+            dimension_y = int(val)
+            continue
+        if (variable == 'nz') :
+            dimension_z = int(val)
+            continue
+        if (variable == 'bottom_left_corner_lon') :
+            lon_origin = float(val)
+            continue
+        if (variable == 'bottom_left_corner_lat') :
+            lat_origin = float(val)
+            continue
+        if (variable == 'top_right_corner_lon') :
+            lon_upper = float(val)
+            continue
+        if (variable == 'top_right_corner_lat') :
+            lat_upper = float(val)
+            continue
+
+        continue
+    if path == "" :
+        print("ERROR: failed to find variables from config file")
+        sys.exit(1)
+
+    fp.close()
+
+    delta_lon = (lon_upper - lon_origin )/(dimension_x-1)
+    delta_lat = (lat_upper - lat_origin)/(dimension_y-1)
+
+    print("\nDownloading model file\n")
+
+    ##IV33.dat.txt  IV33.info
+
+    fname="./"+"IV33.dat.txt"
+    url = path + "/" + fname
+    download_urlfile(url,fname)
+
+    subprocess.check_call(["mkdir", "-p", mdir])
 
     # Now we need to go through the data files and put them in the correct
     # format for LSU_IV. More specifically, we need a Vp.dat
@@ -96,7 +159,7 @@ def main():
     easting_arr = array.array('i', (-1,) * (dimension_x * dimension_y * dimension_z))
     northing_arr = array.array('i', (-1,) * (dimension_x * dimension_y * dimension_z))
 
-    print "dimension is", (dimension_x * dimension_y * dimension_z)
+    print ("dimension is", (dimension_x * dimension_y * dimension_z))
 
     nan_cnt = 0
     total_cnt =0;
@@ -125,7 +188,7 @@ def main():
         easting_arr[loc] = easting_v
         northing_arr[loc] = northing_v
 
-        print total_cnt, "loc",loc," ", x_pos," ",y_pos," ",z_pos," >> ",easting_v," ",northing_v," ",depth_v,":",vp 
+#       print (total_cnt, "loc",loc," ", x_pos," ",y_pos," ",z_pos," >> ",easting_v," ",northing_v," ",depth_v,":",vp )
 
       
         x_pos = x_pos + 1
@@ -136,7 +199,7 @@ def main():
             y_pos=0;
             z_pos = z_pos+1
             if(z_pos == dimension_z) :
-              print "All DONE"
+              print ("All DONE")
 
     vp_arr.tofile(f_vp)
     easting_arr.tofile(f_easting)
