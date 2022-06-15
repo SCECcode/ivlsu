@@ -12,6 +12,10 @@
 
 #include "ivlsu.h"
 
+/** The config of the model */
+char *ivlsu_config_string=NULL;
+int ivlsu_config_sz=0;
+
 /**
  * Initializes the IMPERIAL plugin model within the UCVM framework. In order to initialize
  * the model, we must provide the UCVM install path and optionally a place in memory
@@ -29,8 +33,13 @@ int ivlsu_init(const char *dir, const char *label) {
 	ivlsu_configuration = calloc(1, sizeof(ivlsu_configuration_t));
 	ivlsu_velocity_model = calloc(1, sizeof(ivlsu_model_t));
 
+        ivlsu_config_string = calloc(IVLSU_CONFIG_MAX, sizeof(char));
+        ivlsu_config_string[0]='\0';
+        ivlsu_config_sz=0;
+
 	// Configuration file location.
 	sprintf(configbuf, "%s/model/%s/data/config", dir, label);
+        printf("LOOKING at >> %s\n", configbuf);
 
 	// Read the configuration file.
 	if (ivlsu_read_configuration(configbuf, ivlsu_configuration) != SUCCESS) {
@@ -73,6 +82,10 @@ int ivlsu_init(const char *dir, const char *label) {
                 print_error("Could not set up UTM projection.");
                 return FAIL;
         }
+
+        /* setup config_string */
+        sprintf(ivlsu_config_string,"config = %s\n",configbuf);
+        ivlsu_config_sz=1;
 
 	// Let everyone know that we are initialized and ready for business.
 	ivlsu_is_initialized = 1;
@@ -320,6 +333,23 @@ int ivlsu_version(char *ver, int len)
 }
 
 /**
+ * Returns the model config information.
+ *
+ * @param key Config key string to return.
+ * @return Zero
+ */
+int ivlsu_config(char **config, int *sz)
+{
+  int len=strlen(ivlsu_config_string);
+  if(len > 0) {
+    *config=ivlsu_config_string;
+    *sz=ivlsu_config_sz;
+    return UCVM_CODE_SUCCESS;
+  }
+  return UCVM_CODE_ERROR;
+}
+
+/**
  * Reads the configuration file describing the various properties of CVM-S5 and populates
  * the configuration struct. This assumes configuration has been "calloc'ed" and validates
  * that each value is not zero at the end.
@@ -551,6 +581,17 @@ int model_version(char *ver, int len) {
 	return ivlsu_version(ver, len);
 }
 
+/**
+ * Version function loaded and called by the UCVM library. Calls ivlsu_config.
+ *
+ * @param config Config string to return.
+ * @param sz length of config terms.
+ * @return Zero
+ */
+int model_config(char **config, int *sz) {
+        return ivlsu_config(config, sz);
+}
+
 int (*get_model_init())(const char *, const char *) {
         return &ivlsu_init;
 }
@@ -562,6 +603,9 @@ int (*get_model_finalize())() {
 }
 int (*get_model_version())(char *, int) {
          return &ivlsu_version;
+}
+int (*get_model_config())(char **, int*) {
+         return &ivlsu_config;
 }
 
 

@@ -29,21 +29,31 @@ int main(int argc, const char* argv[]) {
 	ivlsu_point_t pt;
 	ivlsu_properties_t ret;
 
-	// Initialize the model.
-	assert(ivlsu_init("../", "ivlsu") == 0);
+	// Initialize the model. 
+        // try to use Use UCVM_INSTALL_PATH
+        char *envstr=getenv("UCVM_INSTALL_PATH");
+        if(envstr != NULL) {
+	   assert(ivlsu_init(envstr, "ivlsu") == 0);
+           } else {
+	     assert(ivlsu_init("..", "ivlsu") == 0);
+        }
 
 	printf("Loaded the model successfully.\n");
 
 	// Query a point.
-	pt.longitude = -118;
-	pt.latitude = 34;
-	pt.depth = 0;
+	pt.longitude = -116.0516;
+	pt.latitude = 32.6862;
+	pt.depth = 2000;
 
 	ivlsu_query(&pt, &ret, 1);
 
-	assert(ret.vs > 0);
-	assert(ret.vp > 0);
-	assert(ret.rho > 0);
+        printf("vs : %lf\n",ret.vs);
+        printf("vp : %lf\n",ret.vp);
+        printf("rho: %lf\n",ret.rho);
+
+	assert(ret.vs = 2906.943265);
+	assert(ret.vp = 4838.500000);
+	assert(ret.rho = 2510.425129);
 
 	printf("Query was successful.\n");
 
@@ -52,7 +62,7 @@ int main(int argc, const char* argv[]) {
 
 	printf("Model closed successfully.\n");
 
-	printf("\nALL IMPERIAL TESTS PASSED");
+	printf("\nALL IMPERIAL TESTS PASSED\n");
 
 	return 0;
 }

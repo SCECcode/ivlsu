@@ -30,6 +30,9 @@
 /** Defines a return value of NA from model */
 #define NA -1 
 
+/* config string */
+#define IVLSU_CONFIG_MAX 1000
+
 // Structures
 /** Defines a point (latitude, longitude, and depth) in WGS84 format */
 typedef struct ivlsu_point_t {
@@ -151,32 +154,32 @@ int model_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpts);
 // IMPERIAL Related Functions
 
 /** Initializes the model */
-int ivlsu_init(const char *dir, const char *label);
+extern int ivlsu_init(const char *dir, const char *label);
 /** Cleans up the model (frees memory, etc.) */
-int ivlsu_finalize();
+extern int ivlsu_finalize();
 /** Returns version information */
-int ivlsu_version(char *ver, int len);
+extern int ivlsu_version(char *ver, int len);
 /** Queries the model */
-int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpts);
+extern int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpts);
 
 // Non-UCVM Helper Functions
 /** Reads the configuration file. */
-int ivlsu_read_configuration(char *file, ivlsu_configuration_t *config);
-void print_error(char *err);
+extern int ivlsu_read_configuration(char *file, ivlsu_configuration_t *config);
+extern void print_error(char *err);
 /** Retrieves the value at a specified grid point in the model. */
-void ivlsu_read_properties(int x, int y, int z, ivlsu_properties_t *data);
+extern void ivlsu_read_properties(int x, int y, int z, ivlsu_properties_t *data);
 /** Attempts to malloc the model size in memory and read it in. */
-int ivlsu_try_reading_model(ivlsu_model_t *model);
+extern int ivlsu_try_reading_model(ivlsu_model_t *model);
 /** Calculates density from Vp. */
-double ivlsu_calculate_density(double vp);
+extern double ivlsu_calculate_density(double vp);
 /** Calculates Vs from Vp. */
-double ivlsu_calculate_vs(double vp);
+extern double ivlsu_calculate_vs(double vp);
 
 // Interpolation Functions
 /** Linearly interpolates two ivlsu_properties_t structures */
-void ivlsu_linear_interpolation(double percent, ivlsu_properties_t *x0, ivlsu_properties_t *x1, ivlsu_properties_t *ret_properties);
+extern void ivlsu_linear_interpolation(double percent, ivlsu_properties_t *x0, ivlsu_properties_t *x1, ivlsu_properties_t *ret_properties);
 /** Bilinearly interpolates the properties. */
-void ivlsu_bilinear_interpolation(double x_percent, double y_percent, ivlsu_properties_t *four_points, ivlsu_properties_t *ret_properties);
+extern void ivlsu_bilinear_interpolation(double x_percent, double y_percent, ivlsu_properties_t *four_points, ivlsu_properties_t *ret_properties);
 /** Trilinearly interpolates the properties. */
-void ivlsu_trilinear_interpolation(double x_percent, double y_percent, double z_percent, ivlsu_properties_t *eight_points,
+extern void ivlsu_trilinear_interpolation(double x_percent, double y_percent, double z_percent, ivlsu_properties_t *eight_points,
 							 ivlsu_properties_t *ret_properties);
