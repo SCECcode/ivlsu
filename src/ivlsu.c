@@ -39,7 +39,6 @@ int ivlsu_init(const char *dir, const char *label) {
 
 	// Configuration file location.
 	sprintf(configbuf, "%s/model/%s/data/config", dir, label);
-        printf("LOOKING at >> %s\n", configbuf);
 
 	// Read the configuration file.
 	if (ivlsu_read_configuration(configbuf, ivlsu_configuration) != SUCCESS) {
