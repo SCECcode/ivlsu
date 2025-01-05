@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <math.h>
 
-#include "proj_api.h"
+#include "proj.h"
 
 // Constants
 #ifndef M_PI

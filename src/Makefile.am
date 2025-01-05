@@ -1,8 +1,8 @@
 # Autoconf/automake file
 
 # General compiler/linker flags
-AM_CFLAGS = ${CFLAGS}
-AM_LDFLAGS = ${LDFLAGS}
+AM_CFLAGS = ${CFLAGS} ${PROJ_INCLUDES}
+AM_LDFLAGS = ${LDFLAGS} ${PROJ_LDFLAGS}
 
 TARGETS = libivlsu.a libivlsu.so
 
