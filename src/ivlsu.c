@@ -10,6 +10,7 @@
  *
  */
 
+#include "ucvm_model_dtypes.h"
 #include "ivlsu.h"
 
 /** The config of the model */
@@ -20,11 +21,6 @@ int ivlsu_config_sz=0;
 /** Proj coordinate transformation objects. can go from geo <-> utm */
 PJ *ivlsu_geo2utm = NULL;
 char ivlsu_projstr[64];
-
-/** The cosine of the rotation angle used to rotate the box and point around the bottom-left corner. */
-double ivlsu_cos_rotation_angle = 0;
-/** The sine of the rotation angle used to rotate the box and point around the bottom-left corner. */
-double ivlsu_sin_rotation_angle = 0;
 
 static int to_utm(double lon, double lat, double *point_u, double *point_v) {
     PJ_COORD xyzSrc = proj_coord(lat, lon, 0.0, HUGE_VAL);
@@ -207,7 +203,7 @@ int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) 
         // Which point base point does that correspond to?
         load_x_coord = floor(point_x / cs248_total_width_m * (cs248_configuration->nx - 1));
 
-/* make origin-y at lower left instead of upper left (flipped) */
+** make origin-y at lower left instead of upper left (flipped) **
         load_y_coord = floor(point_y / cs248_total_height_m * (cs248_configuration->ny - 1));
         load_y_coord = (cs248_configuration->ny - load_y_coord) - 1;
 
