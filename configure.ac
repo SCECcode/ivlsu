@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 AC_INIT(IMPERIAL, 1.0, software@scec.org)
 AC_CONFIG_MACRO_DIRS([m4])
-AM_INIT_AUTOMAKE(foreign tar-pax)
+AM_INIT_AUTOMAKE([foreign tar-pax no-exeext])
 
 dnl
 dnl Dependencies
