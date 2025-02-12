@@ -184,6 +184,9 @@ int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) 
         // lon,lat,u,v                       
         to_utm(points[i].longitude, points[i].latitude, &point_u, &point_v);
 
+//fprintf(stderr,"XXX point_u is %lf \n", point_u);
+//fprintf(stderr,"XXX point_v is %lf \n", point_v);
+
         // Point within rectangle.
         point_u -= ivlsu_configuration->bottom_left_corner_e;
         point_v -= ivlsu_configuration->bottom_left_corner_n;
@@ -192,26 +195,16 @@ int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) 
         point_x = ivlsu_cos_rotation_angle * point_u - ivlsu_sin_rotation_angle * point_v;
         point_y = ivlsu_sin_rotation_angle * point_u + ivlsu_cos_rotation_angle * point_v;
 
-
-        // Which point base point does that correspond to?
-        load_y_coord = (int)(round((point_y - ivlsu_configuration->bottom_left_corner_n) / delta_lat));
-        load_x_coord = (int)(round((point_x - ivlsu_configuration->bottom_left_corner_e) / delta_lon));
-        load_z_coord = (int)((points[i].depth)/1000);
+//fprintf(stderr,"XXX point_x is %lf \n", point_x);
+//fprintf(stderr,"XXX point_y is %lf \n", point_y);
 
 
-/** ??? from cs248
-        // Which point base point does that correspond to?
-        load_x_coord = floor(point_x / cs248_total_width_m * (cs248_configuration->nx - 1));
+// Which point base point does that correspond to?
+        load_y_coord = (int)(round(point_y/delta_lat));
+        load_x_coord = (int)(round(point_x/delta_lon));
+        load_z_coord = (int)(points[i].depth/1000);
 
-** make origin-y at lower left instead of upper left (flipped) **
-        load_y_coord = floor(point_y / cs248_total_height_m * (cs248_configuration->ny - 1));
-        load_y_coord = (cs248_configuration->ny - load_y_coord) - 1;
-
-        // And on the Z-axis?
-        load_z_coord = (cs248_configuration->depth / cs248_configuration->depth_interval - 1) -
-                       floor(points[i].depth / cs248_configuration->depth_interval);
-
-***/
+//fprintf(stderr,"XXX USING: load_y_coord %d load_x_coord %d load_z_coord %d\n", load_y_coord, load_x_coord, load_z_coord);
 
         // Are we outside the model's X and Y and Z boundaries?
         if (points[i].depth > ivlsu_configuration->depth || load_x_coord > ivlsu_configuration->nx -1  || load_y_coord > ivlsu_configuration->ny -1 || load_x_coord < 0 || load_y_coord < 0 || load_z_coord < 0) {
@@ -227,35 +220,44 @@ int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) 
         double y_interval=(ivlsu_configuration->ny > 1) ?
                      ivlsu_total_height_m / (ivlsu_configuration->ny-1):ivlsu_total_height_m;
 
-
         // Get the X, Y, and Z percentages for the bilinear or trilinear interpolation below.
         x_percent = fmod(point_u, x_interval) / x_interval;
         y_percent = fmod(point_v, y_interval) / y_interval;
         z_percent = fmod(points[i].depth, ivlsu_configuration->depth_interval) / ivlsu_configuration->depth_interval;
 
+//fprintf(stderr,"XXX x_percent %lf y_percent %lf z_percent %lf\n",x_percent, y_percent, z_percent);
+
         if (load_z_coord == 0 && z_percent == 0) {
             // We're below the model boundaries. Bilinearly interpolate the bottom plane and use that value.
             load_z_coord = 0;
+            if(ivlsu_configuration->interpolation) {
 
-            // Get the four properties.
-            ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));    // Orgin.
-            ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));    // Orgin + 1x
-            ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));    // Orgin + 1y
-            ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));    // Orgin + x + y, forms top plane.
+              // Get the four properties.
+              ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));    // Orgin.
+              ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));    // Orgin + 1x
+              ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));    // Orgin + 1y
+              ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));    // Orgin + x + y, forms top plane.
 
-            ivlsu_bilinear_interpolation(x_percent, y_percent, surrounding_points, &(data[i]));
+              ivlsu_bilinear_interpolation(x_percent, y_percent, surrounding_points, &(data[i]));
+              } else {
+                 ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(data[i]));        // Orgin.
+            }
             } else {
+                if( ivlsu_configuration->interpolation) {
                 // Read all the surrounding point properties.
-                ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));    // Orgin.
-                ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));    // Orgin + 1x
-                ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));    // Orgin + 1y
-                ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));    // Orgin + x + y, forms top plane.
-                ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord - 1, &(surrounding_points[4]));    // Bottom plane origin
-                ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord - 1, &(surrounding_points[5]));    // +1x
-                ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord - 1, &(surrounding_points[6]));    // +1y
-                ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord - 1, &(surrounding_points[7]));    // +x +y, forms bottom plane.
-
-                ivlsu_trilinear_interpolation(x_percent, y_percent, z_percent, surrounding_points, &(data[i]));
+                  ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(surrounding_points[0]));    // Orgin.
+                  ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord,     &(surrounding_points[1]));    // Orgin + 1x
+                  ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord,     &(surrounding_points[2]));    // Orgin + 1y
+                  ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord,     &(surrounding_points[3]));    // Orgin + x + y, forms top plane.
+                  ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord - 1, &(surrounding_points[4]));    // Bottom plane origin
+                  ivlsu_read_properties(load_x_coord + 1, load_y_coord,     load_z_coord - 1, &(surrounding_points[5]));    // +1x
+                  ivlsu_read_properties(load_x_coord,     load_y_coord + 1, load_z_coord - 1, &(surrounding_points[6]));    // +1y
+                  ivlsu_read_properties(load_x_coord + 1, load_y_coord + 1, load_z_coord - 1, &(surrounding_points[7]));    // +x +y, forms bottom plane.
+  
+                  ivlsu_trilinear_interpolation(x_percent, y_percent, z_percent, surrounding_points, &(data[i]));
+             } else { // no interpolation, data as it is
+                ivlsu_read_properties(load_x_coord,     load_y_coord,     load_z_coord,     &(data[i]));        // Orgin.
+          }
         }
 
         data[i].rho = ivlsu_calculate_density(data[i].vp);
@@ -275,6 +277,8 @@ int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int numpoints) 
  * @param data The properties struct to which the material properties will be written.
  */
 void ivlsu_read_properties(int x, int y, int z, ivlsu_properties_t *data) {
+
+//fprintf(stderr,"XXX  reading x%d y%d z%d\n",x,y,z);
 
     // Set everything to -1 to indicate not found.
     data->vp = -1;
