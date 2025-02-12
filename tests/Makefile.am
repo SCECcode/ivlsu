@@ -4,7 +4,7 @@ bin_PROGRAMS = test_ivlsu run_test_ivlsu.sh
 
 # General compiler/linker flags
 AM_CFLAGS = ${CFLAGS} ${PROJ_INCLUDES} -I../src
-AM_LDFLAGS = ${LDFLAGS} ${PROJ_LDFLAGS} -L../src -livlsu
+AM_LDFLAGS = ${LDFLAGS} ${PROJ_LDFLAGS} -L../src -livlsu -lm
 
 objects = test.o
 TARGETS = $(bin_PROGRAMS)
