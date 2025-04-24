@@ -1,6 +1,12 @@
 # Imperial  
 
-SSIP Imperial Valley model provides P-wave velocities for the shallow crust in the southern Salton Trough, from the southern Salton Sea to the USA-Mexico border. The model combines travel-time observations from explosions recorded during the Salton Seismic Imaging Project (SSIP) and the IV1979 active source experiment with local earthquake recordings. The model extends from the surface to 8-km depth.
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org /licenses/BSD-3-Clause)
+
+SSIP Imperial Valley model provides P-wave velocities for the shallow crust in
+the southern Salton Trough, from the southern Salton Sea to the USA-Mexico border.
+The model combines travel-time observations from explosions recorded during the 
+Salton Seismic Imaging Project (SSIP) and the IV1979 active source experiment 
+with local earthquake recordings. The model extends from the surface to 8-km depth.
 
 ## Installation
 
