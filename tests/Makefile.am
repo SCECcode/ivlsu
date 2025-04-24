@@ -6,7 +6,7 @@ bin_PROGRAMS = test_ivlsu run_test_ivlsu.sh
 AM_CFLAGS = ${CFLAGS} ${PROJ_INCLUDES} -I../src
 AM_LDFLAGS = ${LDFLAGS} ${PROJ_LDFLAGS} -L../src -livlsu -lm
 
-objects = test.o
+objects = test_api.o
 TARGETS = $(bin_PROGRAMS)
 
 .PHONY = run_test

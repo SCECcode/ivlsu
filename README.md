@@ -1,11 +1,11 @@
 # Imperial  
 
-SSIP Imperial Valley velocity model
+SSIP Imperial Valley model provides P-wave velocities for the shallow crust in the southern Salton Trough, from the southern Salton Sea to the USA-Mexico border. The model combines travel-time observations from explosions recorded during the Salton Seismic Imaging Project (SSIP) and the IV1979 active source experiment with local earthquake recordings. The model extends from the surface to 8-km depth.
 
 ## Installation
 
 This package is intended to be installed as part of the UCVM framework,
-version 22.7.0 or higher. 
+version 25.x or higher. 
 
 ## Library
 
@@ -24,3 +24,5 @@ do I link the library properly?). Questions regarding the model's
 science (e.g. on what paper is the IMPERIAL valley velocity model
 based?) should be directed to the model's authors, located in the
 AUTHORS file.
+
+
