@@ -1,6 +1,6 @@
 # Imperial  
 
-[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org /licenses/BSD-3-Clause)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 SSIP Imperial Valley model provides P-wave velocities for the shallow crust in
 the southern Salton Trough, from the southern Salton Sea to the USA-Mexico border.
