@@ -23,9 +23,6 @@ test_ivlsu: $(objects)
 run_unit : test_ivlsu
 	./test_ivlsu
 
-$(objects): %.o: %.c
-	$(CC) -c $@ $^ $(AM_CFLAGS) 
-
 clean :
 	rm -rf *~ *.o test_ivlsu
 
