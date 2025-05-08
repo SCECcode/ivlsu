@@ -1,0 +1,74 @@
+name: ivlsu-ucvm-ci
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  ivlsu-build-ucvm-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+    - name: set UCVM_SRC_PATH 
+      run: echo "UCVM_SRC_PATH=$RUNNER_WORKSPACE/ivlsu/ucvm" >> $GITHUB_ENV
+    - name: set UCVM_INSTALL_PATH 
+      run: echo "UCVM_INSTALL_PATH=$RUNNER_WORKSPACE/ivlsu/target" >> $GITHUB_ENV
+### build ucvm(main) first 
+    - name: get-ucvm 
+      uses: actions/checkout@v2
+      with: 
+        repository: 'SCECcode/UCVM'
+        ref: testMei
+        path: ucvm
+    - name: build-ucvm
+      uses: ./ucvm/.github/actions/build-ucvm-action
+      with:
+         initiating-repo: 'ivlsu'
+         target-model: 'ivlsu'
+         target-branch: 'testMei'
+#   - name: Start SSH via Ngrok
+#     if: ${{ success() }}
+#     uses: luchihoratiu/debug-via-ssh@main
+#     with:
+#          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
+#          NGROK_TIMEOUT: 3000
+#          SSH_PASS: ${{ secrets.NGROK_SECRET }}
+    - name: get-result
+      run: more ${{ steps.build-ucvm.outputs.build-log }}
+      shell: bash
+    - name: move stock ivlsu away
+      run: (rm -rf $RUNNER_WORKSPACE/ivlsu/ucvm/work/model/ivlsu)
+      shell: bash
+### build ivlsu from github 
+    - name: checkout ivlsu main
+      uses: actions/checkout@v2
+      with: 
+        path: ivlsu
+    - name: move it to the right location
+      run: (mv ivlsu $RUNNER_WORKSPACE/ivlsu/ucvm/work/model; pwd; ls)
+      shell: bash
+    - name: build ivlsu as part of ucvm 
+      run: (cd $RUNNER_WORKSPACE/ivlsu/ucvm/work/model/ivlsu; source $UCVM_INSTALL_PATH/conf/ucvm_env.sh; ./.github/scripts/ivlsu-build.sh)
+      shell: bash
+### check ucvm is still valid
+    - name: check on ucvm
+      run: (source $UCVM_INSTALL_PATH/conf/ucvm_env.sh; ucvm_query -H)
+      shell: bash
+    - name: test ivlsu with ucvm
+      run: (cd $RUNNER_WORKSPACE/ivlsu/ucvm/work/model/ivlsu; source $UCVM_INSTALL_PATH/conf/ucvm_env.sh; ./.github/scripts/ivlsu-test-ucvm.sh)
+      shell: bash
+#    - name: Start SSH via Ngrok
+#      if: ${{ success() }}
+#      uses: luchihoratiu/debug-via-ssh@main
+#      with:
+#            NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
+#            NGROK_TIMEOUT: 3000
+#            SSH_PASS: ${{ secrets.NGROK_SECRET }}
+    - name: test ivlsu under ucvm
+      run: (cd $RUNNER_WORKSPACE/ivlsu/ucvm; source $UCVM_INSTALL_PATH/conf/ucvm_env.sh; ./.github/scripts/ucvm-test.sh)
+      shell: bash
+
+
+
