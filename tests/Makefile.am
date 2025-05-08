@@ -14,21 +14,18 @@ TARGETS = $(bin_PROGRAMS)
 all: $(bin_PROGRAMS)
 
 install:
-	mkdir -p ${prefix}/tests
-	cp test_ivlsu ${prefix}/tests
-	cp run_test_ivlsu.sh ${prefix}/tests
+	mkdir -p ${prefix}/test
+	cp test_ivlsu ${prefix}/test
 
-test_ivlsu$(EXEEXT): $(objects)
-	$(CC) -g -o $@ $^ $(AM_CFLAGS) $(AM_LDFLAGS) 
+test_ivlsu: $(objects)
+	$(CC) -o $@ $^ $(AM_LDFLAGS) 
+
+run_unit : test_ivlsu
+	./test_ivlsu
 
 $(objects): %.o: %.c
-	$(CC) -g -o $@ -c $^ $(AM_CFLAGS) -I${prefix}/include
-
-run_test_ivlsu.sh$(EXEEXT): 
+	$(CC) -c $@ $^ $(AM_CFLAGS) 
 
 clean :
 	rm -rf *~ *.o test_ivlsu
-
-run_test : run_test_ivlsu.sh
-	./run_test_ivlsu.sh
 
