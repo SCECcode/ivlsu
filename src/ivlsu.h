@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <math.h>
 
-#include "proj_api.h"
+#include "proj.h"
 
 // Constants
 #ifndef M_PI
@@ -121,11 +121,6 @@ ivlsu_configuration_t *ivlsu_configuration;
 /** Holds pointers to the velocity model data OR indicates it can be read from file. */
 ivlsu_model_t *ivlsu_velocity_model;
 
-/** Proj.4 latitude longitude, WGS84 projection holder. */
-projPJ ivlsu_latlon;
-/** Proj.4 UTM projection holder. */
-projPJ ivlsu_utm;
-
 /** The cosine of the rotation angle used to rotate the box and point around the bottom-left corner. */
 double ivlsu_cos_rotation_angle = 0;
 /** The sine of the rotation angle used to rotate the box and point around the bottom-left corner. */
@@ -165,7 +160,7 @@ extern int ivlsu_query(ivlsu_point_t *points, ivlsu_properties_t *data, int nump
 // Non-UCVM Helper Functions
 /** Reads the configuration file. */
 extern int ivlsu_read_configuration(char *file, ivlsu_configuration_t *config);
-extern void print_error(char *err);
+extern void ivlsu_print_error(char *err);
 /** Retrieves the value at a specified grid point in the model. */
 extern void ivlsu_read_properties(int x, int y, int z, ivlsu_properties_t *data);
 /** Attempts to malloc the model size in memory and read it in. */
