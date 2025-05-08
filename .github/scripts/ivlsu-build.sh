@@ -8,9 +8,6 @@ if [ $tmp == 'Darwin' ]; then
   brew reinstall gcc
 fi
 
-cd data
-./make_data_files.py
-cd ..
 
 aclocal -I m4
 autoconf
