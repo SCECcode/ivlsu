@@ -15,7 +15,7 @@ with local earthquake recordings. The model extends from the surface to 8-km dep
 ## Installation
 
 This package is intended to be installed as part of the UCVM framework,
-version 25.x or higher. 
+version 25.7 or higher. 
 
 ## Library
 
