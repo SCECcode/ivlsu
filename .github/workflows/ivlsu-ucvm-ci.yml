@@ -2,7 +2,7 @@ name: ivlsu-ucvm-ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [ foofoo ]
 
 jobs:
   ivlsu-build-ucvm-linux:
