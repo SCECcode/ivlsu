@@ -1,5 +1,7 @@
 # IVLSU  
 
+<a href="https://github.com/sceccode/ivlsu.git"><img src="https://github.com/sceccode/ivlsu/wiki/images/ivlsu_logo.png"></a>
+
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 ![GitHub repo size](https://img.shields.io/github/repo-size/sceccode/ivlsu)
 [![ivlsu-ucvm-ci Actions Status](https://github.com/SCECcode/ivlsu/workflows/ivlsu-ucvm-ci/badge.svg
