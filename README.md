@@ -7,12 +7,13 @@
 [![ivlsu-ucvm-ci Actions Status](https://github.com/SCECcode/ivlsu/workflows/ivlsu-ucvm-ci/badge.svg
 )](https://github.com/SCECcode/ivlsu/actions)
 
-
 SSIP Imperial Valley model provides P-wave velocities for the shallow crust in
 the southern Salton Trough, from the southern Salton Sea to the USA-Mexico border.
 The model combines travel-time observations from explosions recorded during the 
 Salton Seismic Imaging Project (SSIP) and the IV1979 active source experiment 
 with local earthquake recordings. The model extends from the surface to 8-km depth.
+
+Persaud P., (2016) Integrated 3-D Seismotectonic-Velocity Model of the Salton Trough Region based on Seismicity and Explosive Shots from the Salton Seismic Imaging Project Final Technical Report to U.S. Geological Survey NEHRP, Award G15AP00062
 
 ## Installation
 
